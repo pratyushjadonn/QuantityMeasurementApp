@@ -2,69 +2,119 @@ package QuantityMeasurmentApp;
 
 public class Length {
 
-	  private final double value;
-	    private final LengthUnit unit;
+    private final double value;
+    private final LengthUnit unit;
+
+    // =========================
+    // ENUM with conversion factors
+    // Base unit = INCHES
+    // =========================
+    public enum LengthUnit {
+
+        INCHES(1.0),
+        FEET(12.0),
+        YARDS(36.0),
+        CENTIMETERS(0.393701);
+
+        private final double conversionFactor;
+
+        LengthUnit(double conversionFactor) {
+            this.conversionFactor = conversionFactor;
+        }
+
+        public double getConversionFactor() {
+            return conversionFactor;
+        }
+    }
+
+    // =========================
+    // Constructor
+    // =========================
+    public Length(double value, LengthUnit unit) {
+
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid value");
+        }
+
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
+
+        this.value = value;
+        this.unit = unit;
+    }
+    // =========================
+    // Convert to base unit (INCHES)
+    // =========================
+    private double convertToBaseUnit() {
+        return value * unit.getConversionFactor();
+    }
 
 
-	    // Step 2: Enum for units
-	    public enum LengthUnit {
-			FEET(12.0), // 1 foot = 12 inches
-			INCHES(1.0), // base unit
-			YARDS(36.0), // 1 yard = 36 inches
-		    CENTIMETERS(0.393701); // 1 cm = 0.393701 inches
-			private final double conversionFactor;
+    // =========================
+    // UC5 STATIC CONVERSION METHOD
+    // =========================
+    public static double convert(
+            double value,
+            LengthUnit source,
+            LengthUnit target) {
 
-			LengthUnit(double conversionFactor) {
-				this.conversionFactor = conversionFactor;
-			}
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid value");
+        }
 
-			public double getConversionFactor() {
-				return conversionFactor;
-			}
-		}
-	    
-	    public Length(double value, LengthUnit unit) {
-			if (unit == null) {
-				throw new IllegalArgumentException("Unit cannot be null");
-			}
-			this.value = value;
-			this.unit = unit;
-		}
-	    private double convertToBaseUnit() {
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("Unit cannot be null");
+        }
 
-	        return value * unit.getConversionFactor();
+        // convert to base unit
+        double baseValue =
+                value * source.getConversionFactor();
 
-	    }
-	    public boolean compare(Length thatLength) {
+        // convert to target unit
+        return baseValue /
+                target.getConversionFactor();
+    }
 
-	        if (thatLength == null)
-	            return false;
 
-	        return Double.compare(
-	                this.convertToBaseUnit(),
-	                thatLength.convertToBaseUnit()
-	        ) == 0;
-	    }
-	    @Override
-	    public boolean equals(Object o) {
+    // =========================
+    // INSTANCE METHOD conversion
+    // =========================
+    public Length convertTo(LengthUnit targetUnit) {
 
-	        if (this == o)
-	            return true;
+        double newValue =
+                convert(this.value, this.unit, targetUnit);
 
-	        if (o == null)
-	            return false;
+        return new Length(newValue, targetUnit);
+    }
 
-	        if (getClass() != o.getClass())
-	            return false;
 
-	        Length thatLength = (Length) o;
+    // =========================
+    // equals override
+    // =========================
+    @Override
+    public boolean equals(Object o) {
 
-	        return compare(thatLength);
-	    }
-	    @Override
-	    public String toString() {
+        if (this == o)
+            return true;
 
-	        return value + " " + unit;
+        if (o == null)
+            return false;
 
-	    }
+        if (getClass() != o.getClass())
+            return false;
+
+        Length other = (Length) o;
+
+        return Double.compare(
+                this.convertToBaseUnit(),
+                other.convertToBaseUnit()) == 0;
+    }
+    // =========================
+    // toString override
+    // =========================
+    @Override
+    public String toString() {
+        return value + " " + unit;
+    }
 }
