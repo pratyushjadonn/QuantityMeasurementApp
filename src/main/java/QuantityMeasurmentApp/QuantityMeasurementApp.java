@@ -1,99 +1,51 @@
 package QuantityMeasurmentApp;
 import java.util.*;
 public class QuantityMeasurementApp {
-	  public static class Feet {
-	        private final double value;
-	        public Feet(double value) {
-	            this.value = value;
-	        }
-	        @Override
-	        public boolean equals(Object obj) {
-	            if (this == obj) {
-	                return true;
-	            }
-	            if (obj == null) {
-	                return false;
-	            }
-
-	            if (this.getClass() != obj.getClass()) {
-	                return false;
-	            }
-	            Feet other = (Feet) obj;
-	            return Double.compare(this.value, other.value) == 0;
-	        }
-	    }
-	  //Uc2
-	  public static class Inches {
-
-	        private final double value;
-
-	        public Inches(double value) {
-	            this.value = value;
-	        }
-
-	        @Override
-	        public boolean equals(Object obj) {
-
-	            if (this == obj)
-	                return true;
-
-	            if (obj == null)
-	                return false;
-
-	            if (this.getClass() != obj.getClass())
-	                return false;
-
-	            Inches other = (Inches) obj;
-
-	            return Double.compare(this.value, other.value) == 0;
-	        }
-	    }
-	  
-	  public static boolean compareFeet(double v1, double v2)
-	    {
-	        Feet f1 = new Feet(v1);
-	        Feet f2 = new Feet(v2);
-
-	        return f1.equals(f2);
-	    }
-
-	    public static boolean compareInches(double v1, double v2)
-	    {
-	        Inches i1 = new Inches(v1);
-	        Inches i2 = new Inches(v2);
-
-	        return i1.equals(i2);
-	    }
-	  
-	 public static void main(String[] args) {
-
-			Scanner scanner = new Scanner(System.in);
-
-			 try {
-
-		            System.out.print("Enter first value in feet: ");
-		            double feet1 = scanner.nextDouble();
-
-		            System.out.print("Enter second value in feet: ");
-		            double feet2 = scanner.nextDouble();
-
-		            System.out.println("Feet equal? " + compareFeet(feet1, feet2));
-
-
-		            System.out.print("Enter first value in inches: ");
-		            double inch1 = scanner.nextDouble();
-
-		            System.out.print("Enter second value in inches: ");
-		            double inch2 = scanner.nextDouble();
-
-		            System.out.println("Inches equal? " + compareInches(inch1, inch2));
-
-		        }
-			catch (InputMismatchException e) {
-				System.out.println("Invalid input! Please enter numeric values only.");
-			} 
-			finally {
-				scanner.close();
-			}
+	//generic method to demonstrate Length equality check
+	public static boolean demonstrateLengthEquality(Length length1, Length length2) {
+		if (length1 == null || length2 == null) {
+			return false;
 		}
+
+		boolean result = length1.equals(length2);
+		System.out.println("Comparing: " + length1 + " and " + length2);
+		System.out.println("Are equal? " + result);
+		return result;
+	}
+
+	//demonstrate Feet equality
+	public static void demonstrateFeetEquality() {
+		Length length1 = new Length(1.0, Length.LengthUnit.FEET);
+		Length length2 = new Length(1.0, Length.LengthUnit.FEET);
+
+		System.out.println("Feet to Feet Comparison:");
+		demonstrateLengthEquality(length1, length2);
+		System.out.println();
+	}
+
+	//demonstrate Inches equality
+	public static void demonstrateInchesEquality() {
+		Length length1 = new Length(1.0, Length.LengthUnit.INCHES);
+		Length length2 = new Length(1.0, Length.LengthUnit.INCHES);
+
+		System.out.println("Inches to Inches Comparison:");
+		demonstrateLengthEquality(length1, length2);
+		System.out.println();
+	}
+
+	//demonstrate Feet and Inches comparison
+	public static void demonstrateFeetInchesComparison() {
+		Length length1 = new Length(1.0, Length.LengthUnit.FEET);
+		Length length2 = new Length(12.0, Length.LengthUnit.INCHES);
+
+		System.out.println("Feet to Inches Comparison:");
+		demonstrateLengthEquality(length1, length2);
+		System.out.println();
+	}
+
+	public static void main(String[] args) {
+		demonstrateFeetEquality();
+		demonstrateInchesEquality();
+		demonstrateFeetInchesComparison();
+	}
 }
