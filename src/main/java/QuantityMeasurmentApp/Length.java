@@ -1,5 +1,6 @@
 package QuantityMeasurmentApp;
 
+
 public class Length {
 
     private final double value;
@@ -25,6 +26,13 @@ public class Length {
         public double getConversionFactor() {
             return conversionFactor;
         }
+    }
+    public double getValue() {
+        return value;
+    }
+
+    public LengthUnit getUnit() {
+        return unit;
     }
 
     // =========================
@@ -117,4 +125,23 @@ public class Length {
     public String toString() {
         return value + " " + unit;
     }
+ // =========================
+ // UC6 ADD METHOD
+ // =========================
+ public Length add(Length other) {
+
+     if (other == null) {
+         throw new IllegalArgumentException("Other length cannot be null");
+     }
+
+     if (!Double.isFinite(other.value)) {
+         throw new IllegalArgumentException("Invalid value");
+     }
+     double thisBase = this.convertToBaseUnit();
+     double otherBase = other.convertToBaseUnit();
+     double sumBase = thisBase + otherBase;
+     double resultValue =
+             sumBase / this.unit.getConversionFactor();
+     return new Length(resultValue, this.unit);
+ }
 }
