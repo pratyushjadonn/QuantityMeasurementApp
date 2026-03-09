@@ -2,96 +2,89 @@ package QuantityMeasurmentApplTest;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import QuantityMeasurmentApp.Length;
-import QuantityMeasurmentApp.LengthUnit;
-import QuantityMeasurmentApp.QuantityMeasurementApp;
+import QuantityMeasurmentApp.QuantityWeight;
+import QuantityMeasurmentApp.WeightUnit;
 class QuantityMeasurementAppTest {
-	// ==============================
-		// UC8 Additional Test Cases
-		// ==============================
 
-		@Test
-		public void testAddition_ResultInCentimeters() {
+    @Test
+    public void testKgEqualsGram() {
 
-		    Length l1 = new Length(1.0, LengthUnit.INCHES);
-		    Length l2 = new Length(1.0, LengthUnit.INCHES);
+        QuantityWeight kg = new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+        QuantityWeight g = new QuantityWeight(1000.0, WeightUnit.GRAM);
 
-		    Length result = l1.add(l2, LengthUnit.CENTIMETERS);
+        assertEquals(kg, g);
+    }
 
-		    Length expected = new Length(5.08, LengthUnit.CENTIMETERS);
+    @Test
+    public void testKgEqualsPound() {
 
-		    assertEquals(expected, result);
-		}
+        QuantityWeight kg = new QuantityWeight(1.0, WeightUnit.KILOGRAM);
+        QuantityWeight pound = new QuantityWeight(2.20462, WeightUnit.POUND);
 
-		@Test
-		public void testAddition_ResultInYards_FromMixedUnits() {
+        assertEquals(kg, pound);
+    }
 
-		    Length l1 = new Length(6.0, LengthUnit.FEET);
-		    Length l2 = new Length(36.0, LengthUnit.INCHES); // 3 feet
+    @Test
+    public void testConversionKgToGram() {
 
-		    Length result = l1.add(l2, LengthUnit.YARDS);
+        QuantityWeight kg = new QuantityWeight(1.0, WeightUnit.KILOGRAM);
 
-		    Length expected = new Length(3.0, LengthUnit.YARDS);
+        QuantityWeight g = kg.convertTo(WeightUnit.GRAM);
 
-		    assertEquals(expected, result);
-		}
+        assertEquals(1000.0, g.getValue(), 0.001);
+    }
 
-		@Test
-		public void testAddition_NegativeValues_TargetUnit() {
+    @Test
+    public void testConversionGramToPound() {
 
-		    Length l1 = new Length(5.0, LengthUnit.FEET);
-		    Length l2 = new Length(-2.0, LengthUnit.FEET);
+        QuantityWeight g = new QuantityWeight(453.592, WeightUnit.GRAM);
 
-		    Length result = l1.add(l2, LengthUnit.FEET);
+        QuantityWeight pound = g.convertTo(WeightUnit.POUND);
 
-		    Length expected = new Length(3.0, LengthUnit.FEET);
+        assertEquals(1.0, pound.getValue(), 0.001);
+    }
 
-		    assertEquals(expected, result);
-		}
+    @Test
+    public void testAdditionKgAndGram() {
 
-		@Test
-		public void testAddition_LargeValues_TargetUnit() {
+        QuantityWeight kg = new QuantityWeight(1.0, WeightUnit.KILOGRAM);
 
-		    Length l1 = new Length(1000.0, LengthUnit.FEET);
-		    Length l2 = new Length(1000.0, LengthUnit.FEET);
+        QuantityWeight g = new QuantityWeight(1000.0, WeightUnit.GRAM);
 
-		    Length result = l1.add(l2, LengthUnit.YARDS);
+        QuantityWeight result = kg.add(g);
 
-		    Length expected = new Length(666.6666666666666, LengthUnit.YARDS);
+        assertEquals(2.0, result.getValue(), 0.001);
+    }
 
-		    assertEquals(expected, result);
-		}
+    @Test
+    public void testAdditionExplicitUnit() {
 
-		@Test
-		public void testAddition_NullOperand_TargetUnit() {
+        QuantityWeight kg = new QuantityWeight(1.0, WeightUnit.KILOGRAM);
 
-		    Length l1 = new Length(5.0, LengthUnit.FEET);
+        QuantityWeight g = new QuantityWeight(1000.0, WeightUnit.GRAM);
 
-		    assertThrows(IllegalArgumentException.class, () -> {
-		        l1.add(null, LengthUnit.FEET);
-		    });
-		}
+        QuantityWeight result = kg.add(g, WeightUnit.GRAM);
 
-		@Test
-		public void testAddition_NullTargetUnit() {
+        assertEquals(2000.0, result.getValue(), 0.001);
+    }
 
-		    Length l1 = new Length(5.0, LengthUnit.FEET);
-		    Length l2 = new Length(5.0, LengthUnit.FEET);
+    @Test
+    public void testZeroWeight() {
 
-		    assertThrows(IllegalArgumentException.class, () -> {
-		        l1.add(l2, null);
-		    });
-		}
+        QuantityWeight kg = new QuantityWeight(0.0, WeightUnit.KILOGRAM);
 
-		@Test
-		public void testAddition_Commutativity_TargetUnit() {
+        QuantityWeight g = kg.convertTo(WeightUnit.GRAM);
 
-		    Length l1 = new Length(1.0, LengthUnit.FEET);
-		    Length l2 = new Length(12.0, LengthUnit.INCHES);
+        assertEquals(0.0, g.getValue());
+    }
 
-		    Length result1 = l1.add(l2, LengthUnit.INCHES);
-		    Length result2 = l2.add(l1, LengthUnit.INCHES);
+    @Test
+    public void testNegativeWeight() {
 
-		    assertEquals(result1, result2);
-		}
+        QuantityWeight kg = new QuantityWeight(-1.0, WeightUnit.KILOGRAM);
+
+        QuantityWeight g = new QuantityWeight(-1000.0, WeightUnit.GRAM);
+
+        assertEquals(kg, g);
+    }
 }
