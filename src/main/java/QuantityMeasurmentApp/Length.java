@@ -1,8 +1,7 @@
 package QuantityMeasurmentApp;
 
 public class Length {
-
-    private final double value;
+	private final double value;
     private final LengthUnit unit;
 
     public Length(double value, LengthUnit unit) {
