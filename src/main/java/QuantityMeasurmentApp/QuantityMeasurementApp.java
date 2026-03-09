@@ -1,36 +1,55 @@
 package QuantityMeasurmentApp;
 import java.util.*;
 public class QuantityMeasurementApp {
-	public static <U extends IMeasurable> void demonstrateEquality(
-            Quantity<U> q1, Quantity<U> q2) {
+	 public static <U extends IMeasurable> void demonstrateEquality(
+	            Quantity<U> q1, Quantity<U> q2) {
 
-        System.out.println(q1 + " equals " + q2 + " : " + q1.equals(q2));
-    }
+	        System.out.println(q1 + " equals " + q2 + " : " + q1.equals(q2));
+	    }
 
-    public static <U extends IMeasurable> void demonstrateConversion(
-            Quantity<U> quantity, U targetUnit) {
+	    public static <U extends IMeasurable> void demonstrateConversion(
+	            Quantity<U> quantity, U targetUnit) {
 
-        System.out.println(quantity + " = " + quantity.convertTo(targetUnit));
-    }
+	        System.out.println(quantity + " = " + quantity.convertTo(targetUnit));
+	    }
 
-    public static <U extends IMeasurable> void demonstrateAddition(
-            Quantity<U> q1, Quantity<U> q2, U targetUnit) {
+	    public static <U extends IMeasurable> void demonstrateAddition(
+	            Quantity<U> q1, Quantity<U> q2, U targetUnit) {
 
-        System.out.println("Sum = " + q1.add(q2, targetUnit));
-    }
+	        System.out.println("Sum = " + q1.add(q2, targetUnit));
+	    }
+	    //uc12
+	    public static <U extends IMeasurable> void demonstrateSubtraction(
+	            Quantity<U> q1, Quantity<U> q2) {
 
-    public static void main(String[] args) {
+	        Quantity<U> result = q1.subtract(q2);
 
-    	Quantity<VolumeUnit> litre =
-    	        new Quantity<>(1.0, VolumeUnit.LITRE);
+	        System.out.println("Subtracting: " + q1 + " - " + q2);
+	        System.out.println("Result: " + result);
+	    }
+	    
+	    public static <U extends IMeasurable> void demonstrateDivision(
+	            Quantity<U> q1, Quantity<U> q2) {
 
-    	Quantity<VolumeUnit> ml =
-    	        new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+	        double result = q1.divide(q2);
 
-    	System.out.println(litre.equals(ml));
+	        System.out.println("Dividing: " + q1 + " / " + q2);
+	        System.out.println("Result: " + result);
+	    }
 
-    	System.out.println(litre.convertTo(VolumeUnit.GALLON));
+	    public static void main(String[] args) {
 
-    	System.out.println(litre.add(ml));
-    }
+	        Quantity<LengthUnit> feet =
+	                new Quantity<>(10.0, LengthUnit.FEET);
+
+	        Quantity<LengthUnit> inches =
+	                new Quantity<>(6.0, LengthUnit.INCHES);
+
+	        demonstrateSubtraction(feet, inches);
+
+	        demonstrateDivision(
+	                new Quantity<>(10.0, LengthUnit.FEET),
+	                new Quantity<>(2.0, LengthUnit.FEET)
+	        );
+	    }
 }
