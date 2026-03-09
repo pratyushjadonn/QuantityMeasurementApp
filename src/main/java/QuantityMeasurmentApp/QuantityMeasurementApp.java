@@ -13,8 +13,8 @@ public class QuantityMeasurementApp {
 			return result;
 		}
 		//overloaded method to accept raw values and units
-		public static boolean demonstrateLengthComparison(double value1, Length.LengthUnit unit1, double value2,
-				Length.LengthUnit unit2) {
+		public static boolean demonstrateLengthComparison(double value1,LengthUnit unit1, double value2,
+				LengthUnit unit2) {
 
 			Length length1 = new Length(value1, unit1);
 			Length length2 = new Length(value2, unit2);
@@ -25,16 +25,12 @@ public class QuantityMeasurementApp {
 
 
 		public static void main(String[] args) {
-		    Length l1 = new Length(1.0, Length.LengthUnit.FEET);
-		    Length l2 = new Length(12.0, Length.LengthUnit.INCHES);
 
-		    Length resultFeet = l1.add(l2, Length.LengthUnit.FEET);
-		    Length resultInches = l1.add(l2, Length.LengthUnit.INCHES);
-		    Length resultYards = l1.add(l2, Length.LengthUnit.YARDS);
+		    Length l1 = new Length(1.0, LengthUnit.FEET);
+		    Length l2 = new Length(12.0, LengthUnit.INCHES);
 
-		    System.out.println(resultFeet); 
-		    System.out.println(resultInches); 
-		    System.out.println(resultYards); 
+		    Length result = l1.add(l2, LengthUnit.FEET);
 
+		    System.out.println(result); // 2 FEET
 	    }
 }
