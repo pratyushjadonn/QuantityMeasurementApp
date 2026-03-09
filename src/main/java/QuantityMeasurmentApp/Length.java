@@ -101,22 +101,21 @@ public class Length {
     // equals override
     // =========================
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object obj) {
 
-        if (this == o)
+        if (this == obj)
             return true;
 
-        if (o == null)
+        if (obj == null || getClass() != obj.getClass())
             return false;
 
-        if (getClass() != o.getClass())
-            return false;
+        Length other = (Length) obj;
 
-        Length other = (Length) o;
+        // convert both to INCHES
+        double thisInInches = this.convertTo(LengthUnit.INCHES).getValue();
+        double otherInInches = other.convertTo(LengthUnit.INCHES).getValue();
 
-        return Double.compare(
-                this.convertToBaseUnit(),
-                other.convertToBaseUnit()) == 0;
+        return Math.abs(thisInInches - otherInInches) < 0.0001;
     }
     // =========================
     // toString override
@@ -144,4 +143,25 @@ public class Length {
              sumBase / this.unit.getConversionFactor();
      return new Length(resultValue, this.unit);
  }
+ //UC7
+ public Length add(Length other, LengthUnit targetUnit) {
+
+	    if (other == null)
+	        throw new IllegalArgumentException("Other length cannot be null");
+
+	    if (targetUnit == null)
+	        throw new IllegalArgumentException("Target unit cannot be null");
+
+	    // Step 1: convert both to base unit (INCHES)
+	    double baseSum =
+	            this.convertToBaseUnit() +
+	            other.convertToBaseUnit();
+
+	    // Step 2: convert base sum to target unit
+	    double resultValue =
+	            baseSum / targetUnit.getConversionFactor();
+
+	    // Step 3: return new object (immutability)
+	    return new Length(resultValue, targetUnit);
+	}
 }
