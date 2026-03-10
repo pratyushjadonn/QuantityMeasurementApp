@@ -22,4 +22,16 @@ public enum LengthUnit implements IMeasurable {
     public String getUnitName() {
         return this.name();
     }
+
+	@Override
+	public double convertToBaseUnit(double value) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double convertFromBaseUnit(double value) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

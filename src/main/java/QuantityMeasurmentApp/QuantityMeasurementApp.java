@@ -17,7 +17,7 @@ public class QuantityMeasurementApp {
 	            Quantity<U> q1, Quantity<U> q2, U targetUnit) {
 
 	        System.out.println("Adding: " + q1 + " + " + q2);
-	        System.out.println("Result: " + q1.add(q2, targetUnit));
+	        System.out.println("Result: " + q1.add(q2));
 	    }
 
 	    // UC12
@@ -41,34 +41,29 @@ public class QuantityMeasurementApp {
 
 	    public static void main(String[] args) {
 
-	        Quantity<LengthUnit> feet =
-	                new Quantity<>(10.0, LengthUnit.FEET);
+	    	Quantity<TemperatureUnit> t1 =
+	                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
 
-	        Quantity<LengthUnit> inches =
-	                new Quantity<>(6.0, LengthUnit.INCHES);
+	        Quantity<TemperatureUnit> t2 =
+	                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
 
-	        // Addition
-	        demonstrateAddition(feet, inches, LengthUnit.FEET);
+	        System.out.println("Equality:");
+	        System.out.println(t1.equals(t2));
 
-	        // Subtraction
-	        demonstrateSubtraction(feet, inches);
-
-	        // Division
-	        demonstrateDivision(
-	                new Quantity<>(10.0, LengthUnit.FEET),
-	                new Quantity<>(2.0, LengthUnit.FEET)
+	        System.out.println("\nConversion:");
+	        System.out.println(
+	                new Quantity<>(100.0, TemperatureUnit.CELSIUS)
+	                        .convertTo(TemperatureUnit.FAHRENHEIT)
 	        );
+	        System.out.println("\nUnsupported operation:");
 
-	        // Conversion
-	        demonstrateConversion(
-	                new Quantity<>(1.0, LengthUnit.FEET),
-	                LengthUnit.INCHES
-	        );
+	        Quantity<TemperatureUnit> temp =
+	                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
 
-	        // Equality
-	        demonstrateEquality(
-	                new Quantity<>(12.0, LengthUnit.INCHES),
-	                new Quantity<>(1.0, LengthUnit.FEET)
-	        );
+	        try {
+	            temp.add(new Quantity<>(50.0, TemperatureUnit.CELSIUS));
+	        } catch (UnsupportedOperationException e) {
+	            System.out.println(e.getMessage());
+	        }
 	    }
 }
