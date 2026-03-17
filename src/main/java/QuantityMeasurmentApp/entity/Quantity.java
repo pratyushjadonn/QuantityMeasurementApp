@@ -1,4 +1,5 @@
-package QuantityMeasurmentApp;
+package QuantityMeasurmentApp.entity;
+
 public class Quantity<U extends IMeasurable> {
 
     private final double value;

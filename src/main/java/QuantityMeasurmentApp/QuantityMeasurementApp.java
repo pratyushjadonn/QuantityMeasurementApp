@@ -1,5 +1,9 @@
 package QuantityMeasurmentApp;
 import java.util.*;
+
+import QuantityMeasurmentApp.entity.IMeasurable;
+import QuantityMeasurmentApp.entity.Quantity;
+import QuantityMeasurmentApp.service.TemperatureUnit;
 public class QuantityMeasurementApp {
 	 public static <U extends IMeasurable> void demonstrateEquality(
 	            Quantity<U> q1, Quantity<U> q2) {

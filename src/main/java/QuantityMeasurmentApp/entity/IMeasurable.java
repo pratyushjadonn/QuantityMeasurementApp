@@ -1,4 +1,4 @@
-package QuantityMeasurmentApp;
+package QuantityMeasurmentApp.entity;
 
 @FunctionalInterface
 interface SupportsArithmetic {

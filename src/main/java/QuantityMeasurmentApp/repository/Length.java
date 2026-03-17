@@ -1,4 +1,6 @@
-package QuantityMeasurmentApp;
+package QuantityMeasurmentApp.repository;
+
+import QuantityMeasurmentApp.service.LengthUnit;
 
 public class Length {
 	private final double value;

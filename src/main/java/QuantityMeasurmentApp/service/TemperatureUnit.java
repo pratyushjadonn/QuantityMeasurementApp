@@ -1,6 +1,8 @@
-package QuantityMeasurmentApp;
+package QuantityMeasurmentApp.service;
 
 import java.util.function.Function;
+
+import QuantityMeasurmentApp.entity.IMeasurable;
 
 public enum TemperatureUnit implements IMeasurable {
 

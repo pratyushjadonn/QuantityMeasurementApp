@@ -4,6 +4,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import QuantityMeasurmentApp.*;
+import QuantityMeasurmentApp.entity.Quantity;
+import QuantityMeasurmentApp.service.LengthUnit;
+import QuantityMeasurmentApp.service.TemperatureUnit;
+import QuantityMeasurmentApp.service.VolumeUnit;
 class QuantityMeasurementAppTest {
 	 // ---------- Equality Tests ----------
 

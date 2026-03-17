@@ -1,4 +1,6 @@
-package QuantityMeasurmentApp;
+package QuantityMeasurmentApp.service;
+
+import QuantityMeasurmentApp.entity.IMeasurable;
 
 public enum VolumeUnit implements IMeasurable {
 
