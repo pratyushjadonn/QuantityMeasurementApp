@@ -1,83 +1,75 @@
 package QuantityMeasurmentApp.entity;
 
+import QuantityMeasurmentApp.units.IMeasurable;
+
 public class Quantity<U extends IMeasurable> {
 
     private final double value;
     private final U unit;
 
     public Quantity(double value, U unit) {
-        if (unit == null) {
+        if (unit == null)
             throw new IllegalArgumentException("Unit cannot be null");
-        }
         this.value = value;
         this.unit = unit;
     }
 
-    public Quantity<U> convertTo(U targetUnit) {
+    public double getValue() {
+        return value;
+    }
 
+    public U getUnit() {
+        return unit;
+    }
+
+    public Quantity<U> convertTo(U targetUnit) {
         double base = unit.convertToBaseUnit(value);
         double converted = targetUnit.convertFromBaseUnit(base);
-
-        return new Quantity<>(converted, targetUnit);
+        return new Quantity<>(round(converted), targetUnit);
     }
 
-    public Quantity<U> add(Quantity<U> other) {
-
-        unit.validateOperationSupport("addition");
-
-        double base1 = unit.convertToBaseUnit(value);
-        double base2 = other.unit.convertToBaseUnit(other.value);
-
-        double result = base1 + base2;
-
-        return new Quantity<>(unit.convertFromBaseUnit(result), unit);
+    public Quantity<U> add(Quantity<U> other, U targetUnit) {
+        validate(other, targetUnit, "addition");
+        double sum = base(this) + base(other);
+        return new Quantity<>(round(targetUnit.convertFromBaseUnit(sum)), targetUnit);
     }
 
-    public Quantity<U> subtract(Quantity<U> other) {
-
-        unit.validateOperationSupport("subtraction");
-
-        double base1 = unit.convertToBaseUnit(value);
-        double base2 = other.unit.convertToBaseUnit(other.value);
-
-        double result = base1 - base2;
-
-        return new Quantity<>(unit.convertFromBaseUnit(result), unit);
+    public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+        validate(other, targetUnit, "subtraction");
+        double diff = base(this) - base(other);
+        return new Quantity<>(round(targetUnit.convertFromBaseUnit(diff)), targetUnit);
     }
 
     public double divide(Quantity<U> other) {
+        validate(other, null, "division");
+        return base(this) / base(other);
+    }
 
-        unit.validateOperationSupport("division");
+    private void validate(Quantity<U> other, U target, String op) {
+        if (other == null)
+            throw new IllegalArgumentException("Null operand");
+        unit.validateOperationSupport(op);
+        other.unit.validateOperationSupport(op);
+    }
 
-        double base1 = unit.convertToBaseUnit(value);
-        double base2 = other.unit.convertToBaseUnit(other.value);
+    private double base(Quantity<U> q) {
+        return q.unit.convertToBaseUnit(q.value);
+    }
 
-        if (base2 == 0) {
-            throw new ArithmeticException("Division by zero");
-        }
-
-        return base1 / base2;
+    private double round(double v) {
+        return Math.round(v * 100.0) / 100.0;
     }
 
     @Override
     public boolean equals(Object obj) {
-
-        if (this == obj) return true;
-
-        if (!(obj instanceof Quantity<?> other)) return false;
-
-        if (!unit.getClass().equals(other.unit.getClass())) return false;
-
-        double base1 = unit.convertToBaseUnit(value);
-        double base2 = ((IMeasurable) other.unit).convertToBaseUnit(other.value);
-
-        double epsilon = 0.0001;
-
-        return Math.abs(base1 - base2) < epsilon;
+        if (!(obj instanceof Quantity<?>))
+            return false;
+        Quantity<?> other = (Quantity<?>) obj;
+        return Double.compare(base(this), other.unit.convertToBaseUnit(other.getValue())) == 0;
     }
 
     @Override
     public String toString() {
-        return "Quantity(" + value + ", " + unit.getUnitName() + ")";
+        return value + " " + unit.getUnitName();
     }
 }
