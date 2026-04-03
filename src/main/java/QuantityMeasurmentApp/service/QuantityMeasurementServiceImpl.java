@@ -1,148 +1,242 @@
 package QuantityMeasurmentApp.service;
 
+import java.util.List;
+import java.util.Comparator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import QuantityMeasurmentApp.dto.QuantityInputDTO;
-import QuantityMeasurmentApp.dto.QuantityMeasurementDTO;
-import QuantityMeasurmentApp.entity.Quantity;
-import QuantityMeasurmentApp.entity.QuantityMeasurementEntity;
-import QuantityMeasurmentApp.repository.QuantityMeasurementRepository;
+import QuantityMeasurmentApp.dto.*;
+import QuantityMeasurmentApp.entity.*;
+import QuantityMeasurmentApp.repository.*;
 import QuantityMeasurmentApp.units.IMeasurable;
 import QuantityMeasurmentApp.utils.QuantityConverter;
 
 @Service
 public class QuantityMeasurementServiceImpl implements QuantityMeasurementService {
 
-    private static final Logger logger = LoggerFactory.getLogger(QuantityMeasurementServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(QuantityMeasurementServiceImpl.class);
 
-    @Autowired
-    private QuantityMeasurementRepository repository;
+	private final QuantityMeasurementRepository repository;
+	private final UserRepository userRepository;
 
-    private void validateSameType(Quantity<? extends IMeasurable> q1, Quantity<? extends IMeasurable> q2) {
-        if (!q1.getUnit().getClass().equals(q2.getUnit().getClass())) {
-            throw new IllegalArgumentException("Cannot operate on different measurement types");
-        }
-    }
+	public QuantityMeasurementServiceImpl(QuantityMeasurementRepository repository, UserRepository userRepository) {
+		this.repository = repository;
+		this.userRepository = userRepository;
+	}
 
-    @Override
-    public QuantityMeasurementDTO add(QuantityInputDTO input) {
-        try {
-            Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
-            Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
+	private User getCurrentUser() {
+		String email = SecurityContextHolder.getContext().getAuthentication().getName();
+		return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+	}
 
-            validateSameType(q1, q2);
+	private void saveHistory(QuantityMeasurementEntity entity) {
+		entity.setUser(getCurrentUser());
+		repository.save(entity);
+	}
 
-            double result = q1.add(q2, q1.getUnit()).getValue();
+	private void validateSameType(Quantity<? extends IMeasurable> q1, Quantity<? extends IMeasurable> q2) {
 
-            repository.save(new QuantityMeasurementEntity("ADD", q1.getValue(), q2.getValue(), result));
+		Class<?> c1 = (q1.getUnit() instanceof Enum<?> e1) ? e1.getDeclaringClass() : q1.getUnit().getClass();
 
-            return new QuantityMeasurementDTO("ADD", result);
+		Class<?> c2 = (q2.getUnit() instanceof Enum<?> e2) ? e2.getDeclaringClass() : q2.getUnit().getClass();
 
-        } catch (Exception e) {
-            logger.error("ADD failed: {}", e.getMessage());
-            repository.save(new QuantityMeasurementEntity("ADD", e.getMessage()));
-            return new QuantityMeasurementDTO("ADD", e.getMessage());
-        }
-    }
+		if (!c1.equals(c2)) {
+			throw new IllegalArgumentException("Cannot operate on different measurement types");
+		}
+	}
 
-    @Override
-    public QuantityMeasurementDTO subtract(QuantityInputDTO input) {
-        try {
-            Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
-            Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
+	@SuppressWarnings("unchecked")
+	private Quantity<IMeasurable> getOutputQuantity(QuantityInputDTO input) {
+		if (input.getOutputUnit() == null || input.getOutputUnit().isBlank()) {
+			return null;
+		}
 
-            validateSameType(q1, q2);
+		QuantityDTO dto = new QuantityDTO();
+		dto.setValue(1.0);
+		dto.setUnit(input.getOutputUnit());
+		dto.setMeasurementType(input.getThisQuantityDTO().getMeasurementType());
 
-            double result = q1.subtract(q2, q1.getUnit()).getValue();
+		return (Quantity<IMeasurable>) QuantityConverter.toEntity(dto);
+	}
 
-            repository.save(new QuantityMeasurementEntity("SUBTRACT", q1.getValue(), q2.getValue(), result));
+	@SuppressWarnings("unchecked")
+	@Override
+	public QuantityMeasurementDTO add(QuantityInputDTO input) {
+		try {
+			Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
+			Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
 
-            return new QuantityMeasurementDTO("SUBTRACT", result);
+			validateSameType(q1, q2);
 
-        } catch (Exception e) {
-            logger.error("SUBTRACT failed: {}", e.getMessage());
-            repository.save(new QuantityMeasurementEntity("SUBTRACT", e.getMessage()));
-            return new QuantityMeasurementDTO("SUBTRACT", e.getMessage());
-        }
-    }
+			Quantity<IMeasurable> outputQuantity = getOutputQuantity(input);
+			double result;
 
-    @Override
-    public Double divide(QuantityInputDTO input) {
-        try {
-            Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
-            Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
+			if (outputQuantity != null) {
+				result = q1.add(q2, outputQuantity.getUnit()).getValue();
+			} else {
+				result = q1.add(q2, q1.getUnit()).getValue();
+			}
 
-            validateSameType(q1, q2);
+			saveHistory(new QuantityMeasurementEntity("ADD", q1.getValue(), q2.getValue(), result));
+			return new QuantityMeasurementDTO("ADD", result);
 
-            if (q2.getValue() == 0)
-                throw new ArithmeticException("Division by zero");
+		} catch (Exception e) {
+			logger.error("ADD failed: {}", e.getMessage());
+			saveHistory(new QuantityMeasurementEntity("ADD", e.getMessage()));
+			return new QuantityMeasurementDTO("ADD", e.getMessage());
+		}
+	}
 
-            double result = q1.divide(q2);
+	@SuppressWarnings("unchecked")
+	@Override
+	public QuantityMeasurementDTO subtract(QuantityInputDTO input) {
+		try {
+			Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
+			Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
 
-            repository.save(new QuantityMeasurementEntity("DIVIDE", q1.getValue(), q2.getValue(), result));
+			validateSameType(q1, q2);
 
-            return result;
+			Quantity<IMeasurable> outputQuantity = getOutputQuantity(input);
+			double result;
 
-        } catch (Exception e) {
-            logger.error("DIVIDE failed: {}", e.getMessage());
-            repository.save(new QuantityMeasurementEntity("DIVIDE", e.getMessage()));
-            throw e;
-        }
-    }
+			if (outputQuantity != null) {
+				result = q1.subtract(q2, outputQuantity.getUnit()).getValue();
+			} else {
+				result = q1.subtract(q2, q1.getUnit()).getValue();
+			}
 
-    @Override
-    public QuantityMeasurementDTO convert(QuantityInputDTO input) {
-        try {
-            Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
-            Quantity<IMeasurable> target = (Quantity<IMeasurable>) QuantityConverter
-                    .toEntity(input.getThatQuantityDTO());
+			saveHistory(new QuantityMeasurementEntity("SUBTRACT", q1.getValue(), q2.getValue(), result));
+			return new QuantityMeasurementDTO("SUBTRACT", result);
 
-            validateSameType(q1, target);
+		} catch (Exception e) {
+			logger.error("SUBTRACT failed: {}", e.getMessage());
+			saveHistory(new QuantityMeasurementEntity("SUBTRACT", e.getMessage()));
+			return new QuantityMeasurementDTO("SUBTRACT", e.getMessage());
+		}
+	}
 
-            double result = q1.convertTo(target.getUnit()).getValue();
+	@SuppressWarnings("unchecked")
+	@Override
+	public QuantityMeasurementDTO divide(QuantityInputDTO input) {
+		try {
+			Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
+			Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
 
-            repository.save(new QuantityMeasurementEntity("CONVERT", q1.getValue(), 0, result));
+			validateSameType(q1, q2);
 
-            return new QuantityMeasurementDTO("CONVERT", result);
+			if (q2.getValue() == 0) {
+				throw new ArithmeticException("Division by zero");
+			}
 
-        } catch (Exception e) {
-            logger.error("CONVERT failed: {}", e.getMessage());
-            return new QuantityMeasurementDTO("CONVERT", e.getMessage());
-        }
-    }
+			double result = q1.divide(q2);
 
-    @Override
-    public QuantityMeasurementDTO compare(QuantityInputDTO input) {
-        try {
-            Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
-            Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
+			saveHistory(new QuantityMeasurementEntity("DIVIDE", q1.getValue(), q2.getValue(), result));
 
-            validateSameType(q1, q2);
+			QuantityMeasurementDTO response = new QuantityMeasurementDTO("DIVIDE", result);
+			response.setMessage("Division completed successfully.");
+			return response;
 
-            boolean result = q1.equals(q2);
+		} catch (Exception e) {
+			logger.error("DIVIDE failed: {}", e.getMessage());
+			saveHistory(new QuantityMeasurementEntity("DIVIDE", e.getMessage()));
+			return new QuantityMeasurementDTO("DIVIDE", e.getMessage());
+		}
+	}
+	@SuppressWarnings("unchecked")
+	@Override
+	public QuantityMeasurementDTO convert(QuantityInputDTO input) {
+		try {
+			Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
+			Quantity<IMeasurable> target = (Quantity<IMeasurable>) QuantityConverter
+					.toEntity(input.getThatQuantityDTO());
 
-            repository.save(new QuantityMeasurementEntity("COMPARE", q1.getValue(), q2.getValue(), result ? 1 : 0));
+			validateSameType(q1, target);
 
-            return new QuantityMeasurementDTO("COMPARE", result ? 1.0 : 0.0);
+			double result = q1.convertTo(target.getUnit()).getValue();
 
-        } catch (Exception e) {
-            logger.error("COMPARE failed: {}", e.getMessage());
-            return new QuantityMeasurementDTO("COMPARE", e.getMessage());
-        }
-    }
+			saveHistory(new QuantityMeasurementEntity("CONVERT", q1.getValue(), 0, result));
 
-    @Override
-    public List<?> getHistory() {
-        return repository.findAll();
-    }
+			return new QuantityMeasurementDTO("CONVERT", result);
 
-    @Override
-    public List<?> getByOperation(String operation) {
-        return repository.findByOperation(operation);
-    }
+		} catch (Exception e) {
+			logger.error("CONVERT failed: {}", e.getMessage());
+			saveHistory(new QuantityMeasurementEntity("CONVERT", e.getMessage()));
+			return new QuantityMeasurementDTO("CONVERT", e.getMessage());
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public QuantityMeasurementDTO compare(QuantityInputDTO input) {
+		try {
+			Quantity<IMeasurable> q1 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThisQuantityDTO());
+			Quantity<IMeasurable> q2 = (Quantity<IMeasurable>) QuantityConverter.toEntity(input.getThatQuantityDTO());
+
+			validateSameType(q1, q2);
+
+//			double firstInBase = q1.convertTo(q1.getUnit()).getValue();
+//			double secondInFirstUnit = q2.convertTo(q1.getUnit()).getValue();
+			double firstInBase = q1.getUnit().convertToBaseUnit(q1.getValue());
+			double secondInFirstUnit = q2.getUnit().convertToBaseUnit(q2.getValue());
+
+			double result;
+			String message;
+
+			if (firstInBase > secondInFirstUnit) {
+				result = 1.0;
+				message = "First quantity is greater.";
+			} else if (firstInBase < secondInFirstUnit) {
+				result = -1.0;
+				message = "Second quantity is greater.";
+			} else {
+				result = 0.0;
+				message = "Both quantities are equal.";
+			}
+
+			saveHistory(new QuantityMeasurementEntity("COMPARE", q1.getValue(), q2.getValue(), result));
+
+			QuantityMeasurementDTO response = new QuantityMeasurementDTO("COMPARE", result);
+			response.setMessage(message);
+			return response;
+
+		} catch (Exception e) {
+			logger.error("COMPARE failed: {}", e.getMessage());
+			saveHistory(new QuantityMeasurementEntity("COMPARE", e.getMessage()));
+			return new QuantityMeasurementDTO("COMPARE", e.getMessage());
+		}
+	}
+	@Override
+	public List<?> getHistory() {
+		return repository.findByUser(getCurrentUser())
+				.stream()
+				.sorted(Comparator.comparing(QuantityMeasurementEntity::getId).reversed())
+				.toList();
+	}
+
+	@Override
+	public List<?> getByOperation(String operation) {
+		return repository.findByUserAndOperationIgnoreCase(getCurrentUser(), operation)
+				.stream()
+				.sorted(Comparator.comparing(QuantityMeasurementEntity::getId).reversed())
+				.toList();
+	}
+
+	
+	public void deleteAllHistory() {
+		repository.deleteAllByUser(getCurrentUser());
+	}
+	
+	public void deleteHistoryById(Long id) {
+		QuantityMeasurementEntity entity = repository.findById(id)
+				.orElseThrow(() -> new RuntimeException("History item not found."));
+
+		if (entity.getUser() == null || !entity.getUser().getId().equals(getCurrentUser().getId())) {
+			throw new RuntimeException("You can delete only your own history.");
+		}
+
+		repository.delete(entity);
+	}
 }

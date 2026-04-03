@@ -15,15 +15,16 @@ public class QuantityMeasurementEntity {
     private Long id;
 
     private String operation;
-
     private double operand1;
     private double operand2;
-
     private double result;
-
     private boolean error;
-
     private String errorMessage;
+
+    // FIX: user field add kiya — service mein setUser() call ho raha tha par field hi nahi thi
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public QuantityMeasurementEntity(String operation, double op1, double op2, double result) {
         this.operation = operation;

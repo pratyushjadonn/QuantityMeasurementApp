@@ -1,7 +1,6 @@
 package QuantityMeasurmentApp.service;
 
 import QuantityMeasurmentApp.dto.*;
-
 import java.util.List;
 
 public interface QuantityMeasurementService {
@@ -10,7 +9,8 @@ public interface QuantityMeasurementService {
 
     QuantityMeasurementDTO subtract(QuantityInputDTO input);
 
-    Double divide(QuantityInputDTO input);
+    // FIX: return type Double tha — impl mein QuantityMeasurementDTO tha, mismatch fix kiya
+    QuantityMeasurementDTO divide(QuantityInputDTO input);
 
     QuantityMeasurementDTO convert(QuantityInputDTO input);
 
