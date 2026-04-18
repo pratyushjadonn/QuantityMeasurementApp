@@ -4,57 +4,38 @@ server:
 spring:
   application:
     name: api-gateway
-
   cloud:
     gateway:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-
       globalcors:
         add-to-simple-url-handler-mapping: true
         corsConfigurations:
           '[/**]':
             allowedOriginPatterns:
               - "${ALLOWED_ORIGINS:http://localhost:3000}"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders:
-              - "*"
-            exposedHeaders:
-              - "Authorization"
+            allowedMethods: [GET, POST, PUT, DELETE, OPTIONS]
+            allowedHeaders: ["*"]
+            exposedHeaders: ["Authorization"]
             allowCredentials: true
             maxAge: 3600
-
       routes:
         - id: auth-service
-          uri: lb://auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/auth/**, /oauth2/**, /login/**
-
         - id: quantity-service
-          uri: lb://quantity-service
+          uri: ${QUANTITY_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/v1/quantities/**
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
-  instance:
-    prefer-ip-address: false
-    hostname: ${RENDER_EXTERNAL_HOSTNAME:localhost}
-    non-secure-port: 443
-    secure-port-enabled: true
-    non-secure-port-enabled: false
 
 jwt:
   secret: ${JWT_SECRET:MyVerySecretKeyForQuantityMeasurementAppMicroservices2024}
 
+eureka:
+  client:
+    enabled: false
+
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
-    com.quantityapp: DEBUG
